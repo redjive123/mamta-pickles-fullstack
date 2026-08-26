@@ -19,3 +19,7 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Local AI Context Files
+AGENT.md
+session.md
