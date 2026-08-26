@@ -1,0 +1,12 @@
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+module.exports = {
+  PORT: process.env.PORT || 5000,
+  MONGO_URI: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/mamta_pickles',
+  JWT_SECRET: process.env.JWT_SECRET || 'mamta_pickles_secret_key_2026',
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '30d',
+  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || 'rzp_test_mamta_pickles_key',
+  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || 'rzp_test_mamta_pickles_secret',
+};
