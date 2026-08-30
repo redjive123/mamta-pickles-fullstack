@@ -75,4 +75,11 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+// Query performance: category/spice filter dropdowns, slug lookups, bestsellers
+productSchema.index({ category: 1 });
+productSchema.index({ spiceLevel: 1 });
+productSchema.index({ slug: 1 });
+productSchema.index({ category: 1, price: 1 });
+productSchema.index({ isBestSeller: 1 });
+
 module.exports = mongoose.model('Product', productSchema);

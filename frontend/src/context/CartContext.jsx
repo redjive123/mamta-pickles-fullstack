@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { computePrices, nextQuantity } from '../utils/cartUtils';
 
 const CartContext = createContext();
 
@@ -50,8 +51,8 @@ export const CartProvider = ({ children }) => {
       prevItems
         .map((item) => {
           if (item.key === itemKey) {
-            const newQty = item.qty + delta;
-            return newQty > 0 ? { ...item, qty: newQty } : null;
+            const newQty = nextQuantity(item.qty, delta);
+            return newQty ? { ...item, qty: newQty } : null;
           }
           return item;
         })
@@ -67,11 +68,7 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
   };
 
-  const itemsPrice = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const shippingPrice = itemsPrice > 599 || itemsPrice === 0 ? 0 : 49;
-  const taxPrice = Math.round(itemsPrice * 0.05); // 5% GST
-  const totalAmount = itemsPrice + shippingPrice + taxPrice;
-  const totalCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
+  const { itemsPrice, shippingPrice, taxPrice, totalAmount, totalCount } = computePrices(cartItems);
 
   return (
     <CartContext.Provider

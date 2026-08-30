@@ -66,4 +66,9 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
+// Query performance: per-user order history, admin status/sort views
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ orderStatus: 1 });
+orderSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Order', orderSchema);

@@ -101,7 +101,9 @@ const createOrder = async (req, res) => {
 // @access  Private / Admin
 const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'name email')
+      .lean();
 
     if (order) {
       return res.json(order);
@@ -127,7 +129,10 @@ const getOrderById = async (req, res) => {
 // @access  Private
 const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort('-createdAt');
+    const orders = await Order.find({ user: req.user._id })
+      .sort('-createdAt')
+      .select('_id orderItems itemsPrice totalAmount isPaid orderStatus createdAt')
+      .lean();
     res.json(orders);
   } catch (error) {
     const memOrders = inMemoryOrders.filter(
@@ -142,7 +147,10 @@ const getMyOrders = async (req, res) => {
 // @access  Private / Admin
 const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).populate('user', 'name email').sort('-createdAt');
+    const orders = await Order.find({})
+      .populate('user', 'name email')
+      .sort('-createdAt')
+      .lean();
     if (orders && orders.length > 0) {
       return res.json(orders);
     }

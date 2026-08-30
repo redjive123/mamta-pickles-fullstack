@@ -16,7 +16,7 @@ const protect = async (req, res, next) => {
 
       // Fetch user from DB or in-memory fallback
       try {
-        const user = await User.findById(decoded.id).select('-password');
+        const user = await User.findById(decoded.id).select('-password').lean();
         if (user) {
           req.user = user;
           return next();

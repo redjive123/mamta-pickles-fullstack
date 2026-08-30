@@ -34,7 +34,7 @@ const registerUser = async (req, res) => {
   }
 
   try {
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email }).select('email').lean();
 
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email' });
@@ -96,7 +96,7 @@ const loginUser = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('_id name email role password');
 
     if (user && (await user.matchPassword(password))) {
       return res.json({

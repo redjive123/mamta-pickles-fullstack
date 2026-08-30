@@ -1,35 +1,64 @@
 const mongoose = require('mongoose');
 const { MONGO_URI } = require('./env');
 
-// Critical for serverless: without a live connection mongoose buffers model
-// commands for ~10s (bufferTimeoutMS default) before failing, blowing past the
-// function timeout. Disable buffering globally so queries fail fast instead.
-mongoose.set('bufferCommands', false);
-mongoose.set('bufferTimeoutMS', 1000);
+const isServerless = process.env.VERCEL === '1';
+
+// IMPORTANT: these mongoose globals must be set at module-load time, BEFORE any
+// model is compiled. On Vercel, `api/index.js` requires `../backend/src/app`
+// (which compiles every model) before `connectDB()` is ever invoked. If
+// buffering is left at the mongoose default, a cold-start query on a
+// not-yet-connected connection will buffer for the default 10s and blow the
+// function timeout (504). Fail fast instead.
+if (isServerless) {
+  mongoose.set('bufferCommands', false);
+  mongoose.set('bufferTimeoutMS', 1000);
+}
 
 let cachedConn = null;
 let connectionAttempted = false;
 
-const CONNECT_TIMEOUT_MS = 3000;
-
 const isLoopbackUri = (uri) =>
   /mongodb:\/\/(127\.0\.0\.1|localhost|0\.0\.0\.0)([:\/]|$)/.test(uri);
 
+// Serverless (Vercel): tight timeouts so requests fail fast while cold starts
+// settle, and disable buffering so model queries reject immediately instead of
+// holding the function open for the default ~10s buffer window.
+const serverlessOptions = {
+  serverSelectionTimeoutMS: 4000,
+  connectTimeoutMS: 4000,
+  socketTimeoutMS: 20000,
+  bufferCommands: false,
+  maxPoolSize: 1,
+  family: 4,
+};
+
+// Persistent hosts (local/dev/prod node server): standard connection, buffering
+// enabled so early queries wait for connectivity, larger pool for throughput.
+// Atlas free tier cold-starts can take 10-20s on first DNS/server selection, so
+// keep the selection timeout generous for non-serverless environments.
+const persistentOptions = {
+  serverSelectionTimeoutMS: 30000,
+  connectTimeoutMS: 30000,
+  socketTimeoutMS: 0,
+  bufferCommands: true,
+  maxPoolSize: 25,
+  keepAlive: true,
+  keepAliveInitialDelay: 300000,
+  family: 4,
+};
+
 const connectDB = async () => {
-  // Return existing live connection without reconnecting (serverless-friendly)
   if (cachedConn && mongoose.connection.readyState === 1) {
     return cachedConn;
   }
 
-  // After a failed attempt, skip re-connecting on this function instance so
-  // every request does not hang waiting on an unreachable MongoDB.
   if (connectionAttempted || !MONGO_URI) {
     return cachedConn;
   }
 
   // On Vercel serverless, loopback URIs can never connect and the driver may
   // hang past the selection timeout and kill the function. Skip them entirely.
-  if (process.env.VERCEL === '1' && isLoopbackUri(MONGO_URI)) {
+  if (isServerless && isLoopbackUri(MONGO_URI)) {
     console.warn('[Mamta Pickles DB Warning] Loopback MONGO_URI detected on Vercel. Using in-memory data store fallback.');
     connectionAttempted = true;
     return null;
@@ -37,32 +66,21 @@ const connectDB = async () => {
 
   connectionAttempted = true;
 
-  const connectPromise = mongoose.connect(MONGO_URI, {
-    serverSelectionTimeoutMS: CONNECT_TIMEOUT_MS,
-    connectTimeoutMS: CONNECT_TIMEOUT_MS,
-    socketTimeoutMS: CONNECT_TIMEOUT_MS,
-    bufferCommands: false,
-  });
+  const options = isServerless ? serverlessOptions : persistentOptions;
 
-  // Prevent unhandled rejection if the connect promise rejects after the race
-  connectPromise.catch(() => {});
-
-  const timeoutPromise = new Promise((resolve) =>
-    setTimeout(() => resolve(null), CONNECT_TIMEOUT_MS + 500)
-  );
+  // For persistent hosts, keep index auto-building on so the schema indexes
+  // added in the models are actually created in Atlas. (Serverless path leaves
+  // the global defaults untouched; buffering is already disabled above.)
+  if (!isServerless) {
+    mongoose.set('autoIndex', true);
+  }
 
   try {
-    const conn = await Promise.race([connectPromise, timeoutPromise]);
-    if (conn) {
-      cachedConn = conn;
-      console.log(`[Mamta Pickles DB] MongoDB Connected: ${mongoose.connection.host}`);
-    } else {
-      console.warn('[Mamta Pickles DB Warning] MongoDB connection timed out. Using in-memory data store fallback.');
-    }
+    cachedConn = await mongoose.connect(MONGO_URI, options);
+    console.log(`[Mamta Pickles DB] MongoDB Connected: ${mongoose.connection.host}`);
   } catch (err) {
-    console.warn(`[Mamta Pickles DB Warning] Could not connect to MongoDB.`);
-    console.warn(`[Mamta Pickles DB Warning] Error: ${err.message}`);
-    console.warn('[Mamta Pickles DB Info] Server will proceed. In-memory data store fallback active.');
+    console.warn(`[Mamta Pickles DB Warning] Could not connect to MongoDB. (${err.message})`);
+    console.warn('[Mamta Pickles DB Info] Using in-memory data store fallback.');
   }
 
   return cachedConn;
