@@ -17,56 +17,36 @@ A production-grade, full-stack e-commerce web application engineered for artisan
 
 ## System Architecture
 
-### High-Level Architecture Diagram
+### Component Data Flow Diagram
 
 ```mermaid
-graph TD
-    subgraph Client ["Client Layer (React 19 SPA)"]
-        UI["React Components (Catalog, Cart, Checkout, Admin)"]
-        Ctx["State Providers (AuthContext, CartContext)"]
-        API_Client["API HTTP Client Layer (Fetch API)"]
+flowchart LR
+    subgraph Client ["Client Tier (React SPA)"]
+        UI["React Components (Catalog, Cart, Admin)"]
+        Ctx["State Contexts (AuthContext, CartContext)"]
+        API["HTTP API Client Service"]
     end
 
-    subgraph Gateway ["Backend Server Gateway (Node.js & Express)"]
-        Express["Express App Server (Port 5000)"]
-        Auth_MW["JWT Auth & RBAC Middleware"]
-        Err_MW["Centralized Error Middleware"]
+    subgraph Server ["Server Tier (Node.js & Express)"]
+        Express["Express Application & Router"]
+        MW["JWT & Error Middlewares"]
+        Ctrl["Controllers (Auth, Product, Order, Payment)"]
     end
 
-    subgraph Controllers ["Business Logic Controllers"]
-        Auth_Ctrl["Auth Controller"]
-        Prod_Ctrl["Product Controller"]
-        Order_Ctrl["Order Controller"]
-        Pay_Ctrl["Payment Controller"]
+    subgraph Persistence ["Persistence & External Services"]
+        Mongoose["Mongoose Models"]
+        DB[("MongoDB Database")]
+        Mem[("In-Memory Datastore")]
+        Razorpay["Razorpay Gateway"]
     end
 
-    subgraph Persistence ["Data Persistence Layer"]
-        Mongoose["Mongoose Schemas (User, Product, Order)"]
-        MongoDB[("MongoDB Primary Database")]
-        Mem_Store[("In-Memory Datastore Fallback")]
-    end
-
-    subgraph External ["External Integration"]
-        Razorpay["Razorpay Gateway (HMAC Verification)"]
-    end
-
-    UI --> Ctx
-    Ctx --> API_Client
-    API_Client -->|HTTP REST JSON| Express
-    Express --> Auth_MW
-    Auth_MW --> Err_MW
-    Express --> Auth_Ctrl
-    Express --> Prod_Ctrl
-    Express --> Order_Ctrl
-    Express --> Pay_Ctrl
-
-    Auth_Ctrl --> Mongoose
-    Prod_Ctrl --> Mongoose
-    Order_Ctrl --> Mongoose
-    Pay_Ctrl --> Razorpay
-
-    Mongoose -->|Primary Connection| MongoDB
-    Mongoose -.->|Automated Fallback| Mem_Store
+    UI --> Ctx --> API
+    API -->|REST API JSON| Express
+    Express --> MW --> Ctrl
+    Ctrl --> Mongoose
+    Ctrl --> Razorpay
+    Mongoose --> DB
+    Mongoose -.-> Mem
 ```
 
 ### Directory Structure
