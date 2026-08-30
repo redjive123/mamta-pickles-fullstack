@@ -10,6 +10,7 @@ import { CheckoutModal } from './components/store/CheckoutModal';
 import { OrderHistoryModal } from './components/store/OrderHistoryModal';
 import { AdminDashboardModal } from './components/store/AdminDashboardModal';
 import { AuthModal } from './components/auth/AuthModal';
+import { InfoModal } from './components/common/InfoModal';
 import { Toast } from './components/common/Toast';
 import { api } from './services/api';
 
@@ -24,6 +25,7 @@ export const App = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [infoModalData, setInfoModalData] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
   const showToast = (message, type = 'success') => {
@@ -93,7 +95,12 @@ export const App = () => {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer
+        onSelectCategory={setActiveCategory}
+        onOpenOrders={() => setIsOrdersOpen(true)}
+        onOpenInfo={(data) => setInfoModalData(data)}
+        onScrollToCatalog={handleScrollToGrid}
+      />
 
       {/* Modals & Overlays */}
       <CartDrawer onProceedToCheckout={() => setIsCheckoutOpen(true)} />
@@ -120,6 +127,11 @@ export const App = () => {
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
         onShowToast={showToast}
+      />
+
+      <InfoModal
+        modalData={infoModalData}
+        onClose={() => setInfoModalData(null)}
       />
 
       <AuthModal onShowToast={showToast} />

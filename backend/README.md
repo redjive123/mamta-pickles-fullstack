@@ -1,18 +1,20 @@
-# Mamta Pickles API Backend
+# Mamta Pickles REST API
 
-Node.js / Express REST API backend for Mamta Pickles store.
+Node.js and Express RESTful API backend service for the Mamta Pickles platform.
 
 ## Features
-- MongoDB database integration with graceful fallback
-- User authentication with JWT & bcrypt password hashing
-- Products catalog API with search, category filtering & sorting
-- Order management & tracking
-- Razorpay payment checkout & signature verification
-- Database seeding script (`npm run seed`)
+- MongoDB object modeling with Mongoose and graceful fallback datastore.
+- User authentication utilizing JSON Web Tokens (JWT) and bcrypt password hashing.
+- Product catalog API supporting search queries, category filters, and sorting.
+- Order processing, customer history tracking, and administrative management.
+- Razorpay payment order generation and HMAC-SHA256 signature verification.
 
-## Run Backend
+## API Documentation
+See root repository README.md for full REST API specifications.
+
+## Local Execution
 ```bash
 npm install
 npm run dev
 ```
-Runs at `http://localhost:5000`.
+Server runs at `http://localhost:5000`.
