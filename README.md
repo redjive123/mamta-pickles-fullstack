@@ -1,3 +1,7 @@
+<img width="2812" height="1490" alt="home" src="https://github.com/user-attachments/assets/bd57d971-e9a4-4dd9-bb45-1e6b4bcc731c" />
+
+---
+
 # Mamta Pickles Fullstack E-Commerce Platform
 
 A production-grade, full-stack e-commerce web application engineered for artisanal food commerce. Built with a modern micro-monorepo structure using React, Vite, Node.js, Express, MongoDB, and integrated with Razorpay payment processing.
@@ -131,24 +135,43 @@ mamta-pickles-fullstack/
 - Full-text instant search across product titles, descriptions, and ingredients.
 - Dynamic jar weight options (250g, 500g, 1kg) with real-time price re-calculation.
 
+
+<img width="2834" height="1490" alt="home2" src="https://github.com/user-attachments/assets/a0b2856b-7d83-4018-ae59-d80e80ccd96f" />
+
+---
+
 ### 2. Shopping Cart & Free Shipping Calculation
 - Persistent shopping cart backed by browser `localStorage`.
 - Real-time free shipping threshold calculator (free delivery on orders above INR 599).
 - Dynamic tax (5% GST) and delivery fee computations.
+
+<img width="2804" height="1494" alt="order-conformed" src="https://github.com/user-attachments/assets/d27f99bb-0600-479b-9d89-1cfd2e8856ec" />
+
+---
 
 ### 3. Authentication & Security
 - User registration and login utilizing JWT tokens.
 - Role-based authorization distinguishing regular customers from system administrators.
 - Password hashing via `bcryptjs`.
 
+<img width="2812" height="1488" alt="auth" src="https://github.com/user-attachments/assets/3461bd65-e50f-43a8-9d03-afa8051cc90c" />
+
+---
+
 ### 4. Checkout & Payment Processing
 - Multi-channel payment support: Razorpay Online Payment Gateway and Cash on Delivery (COD).
 - Backend HMAC-SHA256 signature verification for online transactions.
 - Mandatory user authentication prior to checkout submission.
 
+<img width="2814" height="1486" alt="checkout" src="https://github.com/user-attachments/assets/e90aa5b5-df06-4593-b251-6859f4d98683" />
+
+---
+
 ### 5. Store Administration Dashboard
 - Real-time sales metrics: Total Store Revenue, Total Orders Count, Pending Orders, and Delivered Orders.
 - Administrative order management panel allowing status updates (Pending, Processing, Shipped, Delivered, Cancelled) and payment verification.
+
+<img width="2804" height="1484" alt="admin-store" src="https://github.com/user-attachments/assets/a2927f49-8401-4e98-8b1e-f8d938ff28b4" />
 
 ---
 
