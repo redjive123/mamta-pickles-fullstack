@@ -75,8 +75,37 @@ const connectDB = async () => {
     mongoose.set('autoIndex', true);
   }
 
+  const connectPromise = mongoose.connect(MONGO_URI, options);
+
+  // Serverless: never let the await block a request past its wall-clock budget.
+  // SRV DNS lookups and server selection are not fully bounded by the driver
+  // options alone, so enforce a hard cap and fall back to the in-memory store.
+  // If the background attempt still succeeds, remember it so later warm
+  // requests on this instance use the real database.
+  if (isServerless) {
+    const hardCap = new Promise((resolve) => setTimeout(() => resolve(null), 3500));
+    const result = await Promise.race([connectPromise.catch(() => null), hardCap]);
+
+    if (result) {
+      cachedConn = result;
+      console.log(`[Mamta Pickles DB] MongoDB Connected: ${mongoose.connection.host}`);
+      return cachedConn;
+    }
+
+    console.warn('[Mamta Pickles DB Warning] Atlas connection exceeded 3.5s budget on serverless. Using in-memory data store fallback.');
+    connectPromise
+      .then((conn) => {
+        cachedConn = conn;
+        console.log('[Mamta Pickles DB] MongoDB Connected in background.');
+      })
+      .catch((err) => {
+        console.warn(`[Mamta Pickles DB Warning] Background Atlas connection failed. (${err.message})`);
+      });
+    return null;
+  }
+
   try {
-    cachedConn = await mongoose.connect(MONGO_URI, options);
+    cachedConn = await connectPromise;
     console.log(`[Mamta Pickles DB] MongoDB Connected: ${mongoose.connection.host}`);
   } catch (err) {
     console.warn(`[Mamta Pickles DB Warning] Could not connect to MongoDB. (${err.message})`);
