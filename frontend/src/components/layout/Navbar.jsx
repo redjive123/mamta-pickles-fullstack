@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ShoppingBag, User, Search, PackageCheck, LogOut, Flame } from 'lucide-react';
+import { ShoppingBag, User, Search, PackageCheck, LogOut, Flame, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
-export const Navbar = ({ search, setSearch, onOpenOrders }) => {
+export const Navbar = ({ search, setSearch, onOpenOrders, onOpenAdmin }) => {
   const { user, openAuthModal, logout } = useAuth();
   const { totalCount, setIsCartOpen } = useCart();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -90,7 +90,18 @@ export const Navbar = ({ search, setSearch, onOpenOrders }) => {
         </div>
 
         {/* Right Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Admin Panel Button */}
+          {user && user.role === 'admin' && (
+            <button
+              onClick={onOpenAdmin}
+              className="btn btn-secondary"
+              style={{ padding: '8px 14px', fontSize: '0.85rem', backgroundColor: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}
+            >
+              <Shield size={16} /> Admin Panel
+            </button>
+          )}
+
           {/* Order History */}
           {user && (
             <button
@@ -121,7 +132,7 @@ export const Navbar = ({ search, setSearch, onOpenOrders }) => {
                 }}
               >
                 <User size={16} />
-                <span>{user.name.split(' ')[0]}</span>
+                <span>{user.name ? user.name.split(' ')[0] : 'User'}</span>
               </button>
 
               {showUserDropdown && (
@@ -134,11 +145,34 @@ export const Navbar = ({ search, setSearch, onOpenOrders }) => {
                     boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
                     borderRadius: 12,
                     padding: 8,
-                    minWidth: 160,
+                    minWidth: 170,
                     zIndex: 10,
                     border: '1px solid #e5e0d8',
                   }}
                 >
+                  {user.role === 'admin' && (
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        onOpenAdmin();
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '8px 12px',
+                        background: 'none',
+                        borderRadius: 6,
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        color: '#b45309',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <Shield size={14} /> Admin Dashboard
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setShowUserDropdown(false);

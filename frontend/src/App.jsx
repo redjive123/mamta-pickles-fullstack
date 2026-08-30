@@ -8,6 +8,7 @@ import { ProductDetailModal } from './components/store/ProductDetailModal';
 import { CartDrawer } from './components/store/CartDrawer';
 import { CheckoutModal } from './components/store/CheckoutModal';
 import { OrderHistoryModal } from './components/store/OrderHistoryModal';
+import { AdminDashboardModal } from './components/store/AdminDashboardModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { Toast } from './components/common/Toast';
 import { api } from './services/api';
@@ -22,6 +23,7 @@ export const App = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
   const showToast = (message, type = 'success') => {
@@ -66,6 +68,7 @@ export const App = () => {
         search={search}
         setSearch={setSearch}
         onOpenOrders={() => setIsOrdersOpen(true)}
+        onOpenAdmin={() => setIsAdminOpen(true)}
       />
 
       {/* Main Store Content */}
@@ -105,11 +108,18 @@ export const App = () => {
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         onShowToast={showToast}
+        onOpenOrders={() => setIsOrdersOpen(true)}
       />
 
       <OrderHistoryModal
         isOpen={isOrdersOpen}
         onClose={() => setIsOrdersOpen(false)}
+      />
+
+      <AdminDashboardModal
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+        onShowToast={showToast}
       />
 
       <AuthModal onShowToast={showToast} />

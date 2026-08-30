@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { X, CreditCard, ShieldCheck, CheckCircle2, AlertCircle, Truck } from 'lucide-react';
+import { X, CreditCard, CheckCircle2, AlertCircle, Truck, User, LogIn, PackageCheck } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 
-export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
+export const CheckoutModal = ({ isOpen, onClose, onShowToast, onOpenOrders }) => {
   const { cartItems, itemsPrice, shippingPrice, taxPrice, totalAmount, clearCart } = useCart();
-  const { user, token } = useAuth();
+  const { user, token, openAuthModal } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: user ? user.name : '',
@@ -31,10 +31,17 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
   const handleCheckout = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!user || !token) {
+      setError('You must be logged in to place an order.');
+      openAuthModal('login');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // 1. Create order on backend first
+      // 1. Create order on backend with authorization token
       const orderPayload = {
         orderItems: cartItems.map((i) => ({
           name: i.name,
@@ -50,7 +57,6 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
         taxPrice,
         shippingPrice,
         totalAmount,
-        guestInfo: !user ? { name: formData.fullName, email: 'customer@mamtapickles.com' } : undefined,
       };
 
       const createdOrder = await api.createOrder(orderPayload, token);
@@ -77,7 +83,7 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
               await api.updateOrderToPaid(createdOrder._id, {
                 razorpayPaymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
                 razorpayOrderId: response.razorpay_order_id || razorpayOrder.id,
-              });
+              }, token);
 
               clearCart();
               setOrderSuccess({ ...createdOrder, isPaid: true });
@@ -89,8 +95,9 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
             }
           },
           prefill: {
-            name: formData.fullName,
+            name: formData.fullName || user.name,
             contact: formData.phone,
+            email: user.email,
           },
           theme: {
             color: '#d97706',
@@ -111,12 +118,12 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
           setTimeout(async () => {
             await api.updateOrderToPaid(createdOrder._id, {
               razorpayPaymentId: `pay_sim_${Date.now()}`,
-            });
+            }, token);
             clearCart();
             setOrderSuccess({ ...createdOrder, isPaid: true });
             onShowToast('Simulated Payment Successful! Order placed.');
             setLoading(false);
-          }, 1500);
+          }, 1200);
         }
       } else {
         // 3. Cash on Delivery (COD) Flow
@@ -172,7 +179,7 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
                 <strong style={{ color: '#1e1b18' }}>#{orderSuccess._id}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.88rem' }}>
-                <span style={{ color: '#8c8275' }}>Total Amount Paid:</span>
+                <span style={{ color: '#8c8275' }}>Total Amount:</span>
                 <strong style={{ color: '#d97706' }}>₹{orderSuccess.totalAmount}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
@@ -181,15 +188,49 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
               </div>
             </div>
 
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setOrderSuccess(null);
+                  onClose();
+                  if (onOpenOrders) onOpenOrders();
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '12px 20px' }}
+              >
+                <PackageCheck size={18} /> View in My Orders
+              </button>
+              <button
+                onClick={() => {
+                  setOrderSuccess(null);
+                  onClose();
+                }}
+                className="btn btn-primary"
+                style={{ padding: '12px 24px' }}
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        ) : !user ? (
+          /* Authentication Required View */
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <User size={48} style={{ color: '#d97706', marginBottom: 12 }} />
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e1b18', marginBottom: 8 }}>
+              Account Login Required
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#655d54', marginBottom: 24, lineHeight: 1.5 }}>
+              Please sign in to your Mamta Pickles account or create a new one to complete your order and track live shipment updates.
+            </p>
             <button
               onClick={() => {
-                setOrderSuccess(null);
                 onClose();
+                openAuthModal('login');
               }}
               className="btn btn-primary"
-              style={{ padding: '12px 28px' }}
+              style={{ padding: '12px 28px', fontSize: '0.95rem' }}
             >
-              Continue Shopping
+              <LogIn size={18} /> Sign In / Register to Checkout
             </button>
           </div>
         ) : (
@@ -199,7 +240,7 @@ export const CheckoutModal = ({ isOpen, onClose, onShowToast }) => {
               Delivery & Payment
             </h2>
             <p style={{ fontSize: '0.85rem', color: '#655d54', marginBottom: 20 }}>
-              Please enter your shipping address to complete your order.
+              Logged in as <strong>{user.name}</strong> ({user.email})
             </p>
 
             {error && (

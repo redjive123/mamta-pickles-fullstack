@@ -56,7 +56,7 @@ export const api = {
     });
   },
 
-  // Orders
+  // Orders (Customer)
   async createOrder(orderData, token) {
     return request('/orders', {
       method: 'POST',
@@ -71,10 +71,26 @@ export const api = {
     });
   },
 
-  async updateOrderToPaid(orderId, paymentResult) {
+  async updateOrderToPaid(orderId, paymentResult, token) {
     return request(`/orders/${orderId}/pay`, {
       method: 'PUT',
       body: JSON.stringify(paymentResult),
+      token,
+    });
+  },
+
+  // Orders (Admin)
+  async getAllOrders(token) {
+    return request('/orders', {
+      token,
+    });
+  },
+
+  async updateOrderStatus(orderId, statusData, token) {
+    return request(`/orders/${orderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(statusData),
+      token,
     });
   },
 

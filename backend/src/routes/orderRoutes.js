@@ -4,13 +4,17 @@ const {
   createOrder,
   getOrderById,
   getMyOrders,
+  getAllOrders,
+  updateOrderStatus,
   updateOrderToPaid,
 } = require('../controllers/orderController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middleware/authMiddleware');
 
-router.post('/', createOrder);
+router.post('/', protect, createOrder);
+router.get('/', protect, admin, getAllOrders);
 router.get('/my-orders', protect, getMyOrders);
-router.get('/:id', getOrderById);
-router.put('/:id/pay', updateOrderToPaid);
+router.get('/:id', protect, getOrderById);
+router.put('/:id/status', protect, admin, updateOrderStatus);
+router.put('/:id/pay', protect, updateOrderToPaid);
 
 module.exports = router;

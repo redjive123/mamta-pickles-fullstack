@@ -2,13 +2,32 @@ const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
 
 // In-memory fallback users store if DB is disconnected
-const inMemoryUsers = [];
+const inMemoryUsers = [
+  {
+    _id: 'usr_admin_999',
+    name: 'Mamta Store Admin',
+    email: 'admin@mamtapickles.com',
+    password: 'adminpassword123',
+    role: 'admin',
+  },
+  {
+    _id: 'usr_demo_123',
+    name: 'Demo Customer',
+    email: 'demo@mamtapickles.com',
+    password: 'password123',
+    role: 'user',
+  },
+];
+
+const findInMemoryUserById = (id) => {
+  return inMemoryUsers.find((u) => u._id === id);
+};
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Please provide name, email, and password' });
@@ -25,6 +44,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password,
+      role: role === 'admin' ? 'admin' : 'user',
     });
 
     if (user) {
@@ -46,7 +66,13 @@ const registerUser = async (req, res) => {
     }
 
     const mockId = 'usr_' + Date.now();
-    const newUser = { _id: mockId, name, email, password, role: 'user' };
+    const newUser = {
+      _id: mockId,
+      name,
+      email,
+      password,
+      role: role === 'admin' ? 'admin' : 'user',
+    };
     inMemoryUsers.push(newUser);
 
     res.status(201).json({
@@ -80,36 +106,25 @@ const loginUser = async (req, res) => {
         role: user.role,
         token: generateToken(user._id),
       });
-    } else {
-      return res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
-    // In-memory fallback
-    const memUser = inMemoryUsers.find((u) => u.email === email && u.password === password);
-
-    if (memUser) {
-      return res.json({
-        _id: memUser._id,
-        name: memUser.name,
-        email: memUser.email,
-        role: memUser.role,
-        token: generateToken(memUser._id),
-      });
-    }
-
-    // Default demo login for testing
-    if (email === 'demo@mamtapickles.com' && password === 'password123') {
-      return res.json({
-        _id: 'usr_demo_123',
-        name: 'Demo Customer',
-        email: 'demo@mamtapickles.com',
-        role: 'user',
-        token: generateToken('usr_demo_123'),
-      });
-    }
-
-    return res.status(401).json({ message: 'Invalid email or password' });
+    // Proceed to memory fallback
   }
+
+  // In-memory fallback
+  const memUser = inMemoryUsers.find((u) => u.email === email && u.password === password);
+
+  if (memUser) {
+    return res.json({
+      _id: memUser._id,
+      name: memUser.name,
+      email: memUser.email,
+      role: memUser.role,
+      token: generateToken(memUser._id),
+    });
+  }
+
+  return res.status(401).json({ message: 'Invalid email or password' });
 };
 
 // @desc    Get user profile
@@ -132,4 +147,5 @@ module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
+  findInMemoryUserById,
 };
