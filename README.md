@@ -4,6 +4,20 @@ A production-grade, full-stack e-commerce web application engineered for artisan
 
 ---
 
+## Live Demo
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Mamta_Pickles-%23d97706.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://mamta-pickles-fullstack-c3sk3w76e.vercel.app)
+
+[![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://reactjs.org)
+[![Vite](https://img.shields.io/badge/Vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Node.js](https://img.shields.io/badge/Node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)](https://expressjs.com)
+[![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com)
+[![Razorpay](https://img.shields.io/badge/Razorpay-02042B?style=for-the-badge&logo=razorpay&logoColor=%2300BFA5)](https://razorpay.com)
+[![Deployed on Vercel](https://img.shields.io/badge/Vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+
+---
+
 ## Technical Overview & Engineering Metrics
 
 - Architecture: Decoupled client-server monorepo with centralized state management.
