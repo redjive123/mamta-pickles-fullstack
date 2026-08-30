@@ -15,7 +15,14 @@ async function request(endpoint, options = {}) {
     headers,
   });
 
-  const data = await response.json();
+  const text = await response.text();
+  let data;
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (error) {
+    data = { message: `Server returned an invalid response (${response.status})` };
+  }
 
   if (!response.ok) {
     throw new Error(data.message || 'Something went wrong. Please try again.');
